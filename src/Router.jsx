@@ -8,6 +8,7 @@ import RegisterTeacher from './components/Auth/RegisterTeacher';
 import UserManagement from './components/Admin/UserManagement';
 import NavBar from './components/NavBar';
 import UserProfile from './components/Profile/UserProfile';
+import CategoryManagement from './components/Admin/CategoryManagement';
 
 function AppRouter() {
 
@@ -36,6 +37,8 @@ function AppRouter() {
           <>
             <Route path="/registerteacher" element={<RegisterTeacher />} />
             <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/categories" element={<CategoryManagement />} />
+            <Route path="*" element={<Navigate to="/admin/users" replace />} />
           </>
         )}
 

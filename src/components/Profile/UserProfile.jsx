@@ -12,7 +12,6 @@ import { getAuthHeader, decryptData, encryptData } from '../../utils/security';
 const API_URL = 'http://localhost:8080/api/users';
 
 const UserProfile = () => {
-  // --- ESTADOS PARA EL FORMULARIO DE PERFIL ---
   const getInitialUser = () => {
     const encryptedSession = localStorage.getItem('user');
     return encryptedSession ? decryptData(encryptedSession)?.user : null;
@@ -21,15 +20,12 @@ const UserProfile = () => {
   const [profileFormData, setProfileFormData] = useState({ name: '', lastName: '', surname: '', email: '', phone: '' });
   const [profileFormErrors, setProfileFormErrors] = useState({});
   const [profileLoading, setProfileLoading] = useState(false);
-  
-  // --- ESTADOS PARA EL FORMULARIO DE CONTRASEÑA ---
   const [passwordFormData, setPasswordFormData] = useState({ newPassword: '', confirmPassword: '' });
   const [passwordFormErrors, setPasswordFormErrors] = useState({});
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   const { showToast } = useContext(ToastContext);
 
-  // Efecto para poblar el formulario de perfil
   useEffect(() => {
     if (user) {
       setProfileFormData({
@@ -41,8 +37,6 @@ const UserProfile = () => {
       });
     }
   }, [user]);
-  
-  // --- LÓGICA PARA ACTUALIZAR PERFIL ---
   const validateProfileForm = (data) => {
     const errors = {};
     if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,30}$/.test(data.name)) errors.name = "El nombre solo puede contener letras y espacios (2-30 caracteres).";
@@ -86,8 +80,6 @@ const UserProfile = () => {
       setProfileLoading(false);
     }
   };
-
-  // --- LÓGICA PARA CAMBIAR CONTRASEÑA ---
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const validatePasswordForm = () => {
@@ -127,8 +119,7 @@ const UserProfile = () => {
       setPasswordLoading(false);
     }
   };
-
-  // --- RENDERIZADO DEL COMPONENTE ---
+  
   if (!user) {
     return (
       <Card title="Error de Sesión" style={{ margin: '2rem' }}>

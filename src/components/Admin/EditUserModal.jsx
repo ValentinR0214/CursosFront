@@ -5,12 +5,10 @@ import { InputText } from 'primereact/inputtext';
 import { ToastContext } from '../../contexts/ToastContext';
 
 const EditUserModal = ({ user, visible, onHide, onSave }) => {
-  // --- ESTADOS ---
   const [formData, setFormData] = useState({ name: '', lastName: '', surname: '', email: '', phone: '' });
   const [formErrors, setFormErrors] = useState({});
   const { showToast } = useContext(ToastContext);
 
-  // Cuando el 'user' cambia, llena el formulario y resetea los errores
   useEffect(() => {
     if (user) {
       setFormData({
@@ -21,10 +19,9 @@ const EditUserModal = ({ user, visible, onHide, onSave }) => {
         phone: user.phone || '',
       });
     }
-    setFormErrors({}); // Limpia los errores al abrir o cambiar de usuario
+    setFormErrors({}); 
   }, [user]);
-
-  // --- VALIDACIÓN ---
+  
   const validateForm = () => {
     const errors = {};
     if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,30}$/.test(formData.name)) errors.name = "El nombre solo puede contener letras y espacios (2-30 caracteres).";
@@ -34,23 +31,19 @@ const EditUserModal = ({ user, visible, onHide, onSave }) => {
     if (formData.phone && !/^\d{10}$/.test(formData.phone)) errors.phone = "El teléfono debe tener exactamente 10 dígitos.";
     
     setFormErrors(errors);
-    // Devuelve true si no hay errores, false si los hay
     return Object.keys(errors).length === 0;
   };
   
-  // --- MANEJADORES ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveChanges = () => {
-    // Si la validación no pasa, detiene el proceso
     if (!validateForm()) {
       showToast('error', 'Error de Validación', 'Por favor, corrige los campos marcados.');
       return;
     }
-    // Si la validación es exitosa, llama a la función onSave del padre
     onSave(user.id, formData);
   };
 

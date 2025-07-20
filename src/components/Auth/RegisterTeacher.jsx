@@ -2,26 +2,22 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { getAuthHeader } from '../../utils/security';
 import { ToastContext } from '../../contexts/ToastContext';
-
-// --- Importaciones de Componentes de PrimeReact ---
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 
 const RegisterTeacher = () => {
-  // --- ESTADOS DEL FORMULARIO ---
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState(''); // Añadido campo de teléfono
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [formErrors, setFormErrors] = useState({}); // Estado para los errores
+  const [formErrors, setFormErrors] = useState({});
   const { showToast } = useContext(ToastContext);
 
-  // --- LÓGICA DE VALIDACIÓN ---
   const validateForm = () => {
     const errors = {};
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -38,13 +34,13 @@ const RegisterTeacher = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setFormErrors({}); // Limpia errores previos
+    setFormErrors({}); 
 
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       showToast('error', 'Error de Validación', 'Por favor, corrige los campos marcados.');
-      return; // Detiene el envío si hay errores
+      return; 
     }
 
     setLoading(true);
@@ -56,8 +52,6 @@ const RegisterTeacher = () => {
       await axios.post(API_URL, teacherData, { headers: getAuthHeader() });
       
       showToast('success', 'Éxito', 'Profesor registrado correctamente.');
-      
-      // Limpia todos los campos del formulario
       setName('');
       setLastName('');
       setSurname('');

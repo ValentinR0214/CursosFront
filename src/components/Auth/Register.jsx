@@ -10,7 +10,6 @@ import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 
 const Register = () => {
-  // --- ESTADOS DEL FORMULARIO ---
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [surname, setSurname] = useState('');
@@ -22,8 +21,6 @@ const Register = () => {
   
   const navigate = useNavigate();
   const { showToast } = useContext(ToastContext);
-
-  // --- LÓGICA DE VALIDACIÓN ---
   const validateForm = () => {
     const errors = {};
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -40,13 +37,13 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setFormErrors({}); // Limpia errores previos
+    setFormErrors({});
 
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       showToast('error', 'Error de Validación', 'Por favor, corrige los campos marcados.');
-      return; // Detiene el envío
+      return;
     }
 
     setLoading(true);
@@ -56,8 +53,6 @@ const Register = () => {
     try {
       await authService.register(userData);
       showToast('success', '¡Registro Exitoso!', 'Serás redirigido para iniciar sesión.');
-      
-      // Limpia todos los campos
       setName('');
       setLastName('');
       setSurname('');

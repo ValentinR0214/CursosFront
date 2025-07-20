@@ -26,6 +26,11 @@ const NavBar = () => {
           command: () => { navigate('/registerteacher'); }
         },
         {
+          label: 'Categorías',
+          icon: 'pi pi-tags',
+          command: () => { navigate('/admin/categories'); }
+        },
+        {
           label: 'Ver Usuarios',
           icon: 'pi pi-users',
           command: () => { navigate('/admin/users'); } 
@@ -68,11 +73,9 @@ const NavBar = () => {
       <Button 
         label="Mi Perfil" 
         icon="pi pi-user" 
-        // 'p-button-text' le da una apariencia sin borde, ideal para NavBars
-        // 'p-button-secondary' le da un color de texto grisáceo para diferenciarlo
         className="p-button-text p-button-secondary" 
         onClick={() => navigate('/profile')} 
-        style={{ marginRight: '1rem' }} // Añade un espacio a la derecha
+        style={{ marginRight: '1rem' }} 
       />
       <Button 
         label="Cerrar Sesión" 
