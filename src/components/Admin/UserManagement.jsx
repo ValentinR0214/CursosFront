@@ -112,6 +112,7 @@ const UserManagement = () => {
         <Column field="name" header="Nombre" sortable />
         <Column field="lastName" header="Apellido Paterno" sortable />
         <Column field="surname" header="Apellido Materno" sortable />
+        <Column field="phone" header="Telefono" sortable />
         <Column field="email" header="Email" sortable />
         <Column field="rol.roleEnum" header="Rol" sortable />
         <Column header="Estado" body={statusBodyTemplate} sortable field="statusActive" />

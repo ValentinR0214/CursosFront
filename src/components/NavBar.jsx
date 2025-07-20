@@ -63,7 +63,17 @@ const NavBar = () => {
 
   const endContent = (
     <div style={{ display: 'flex', alignItems: 'center' }}>
+
       <span className="p-mr-2" style={{marginRight: '1rem'}}>Hola, {userName}</span>
+      <Button 
+        label="Mi Perfil" 
+        icon="pi pi-user" 
+        // 'p-button-text' le da una apariencia sin borde, ideal para NavBars
+        // 'p-button-secondary' le da un color de texto grisáceo para diferenciarlo
+        className="p-button-text p-button-secondary" 
+        onClick={() => navigate('/profile')} 
+        style={{ marginRight: '1rem' }} // Añade un espacio a la derecha
+      />
       <Button 
         label="Cerrar Sesión" 
         icon="pi pi-sign-out" 
@@ -71,6 +81,8 @@ const NavBar = () => {
         onClick={handleLogout} 
       />
     </div>
+
+    
   );
 
   return (
