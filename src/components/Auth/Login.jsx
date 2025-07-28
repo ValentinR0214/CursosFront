@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+// 1. Importa Link y useSearchParams para manejar la URL
+import { Link, useSearchParams } from 'react-router-dom';
 import { ToastContext } from '../../contexts/ToastContext';
 import authService from '../../services/authService';
 import { encryptData } from '../../utils/security';
@@ -12,14 +13,32 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   
   const { showToast } = useContext(ToastContext);
+  // 2. Lee los parámetros de la URL
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get('redirect');
+
+  const validateForm = () => {
+    const errors = {};
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      errors.email = "Por favor, ingresa un correo válido.";
+    }
+    if (!password.trim()) {
+      errors.password = "Por favor, ingresa tu contraseña.";
+    }
+    return errors;
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setFormErrors({});
 
-    if (!email.trim() || !password.trim()) {
-      showToast('warn', 'Advertencia', 'Por favor, ingresa tu correo y contraseña.');
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      showToast('error', 'Campos Inválidos', 'Por favor, revisa la información ingresada.');
       return;
     }
 
@@ -35,35 +54,30 @@ const Login = () => {
       }
       
       const encryptedData = encryptData(response.data);
-      if (!encryptedData) {
-        showToast('error', 'Error', 'No se pudo asegurar la sesión.');
-        setLoading(false);
-        return;
-      }
-      
       localStorage.setItem('user', encryptedData);
       
-      const role = response.data?.user?.rol?.roleEnum;
-      if (!role) {
-        showToast('error', 'Error', 'Los datos del usuario recibidos son incorrectos.');
-        localStorage.removeItem('user');
-        setLoading(false);
-        return;
-      }
-      switch (role.toUpperCase()) {
-        case 'ADMIN':
-          window.location.href = '/admin/users'; 
-          break;
-        case 'STUDENT':
-          window.location.href = '/test';
-          break;
-        case 'TEACHER':
-          window.location.href = '/teacher/my-courses'; 
-          break;
-        default:
-          showToast('error', 'Error', `Rol "${role}" no reconocido.`);
-          localStorage.removeItem('user');
-          break;
+      // --- 3. LÓGICA DE REDIRECCIÓN MEJORADA ---
+      if (redirectPath) {
+        // Si hay una URL de redirección, la usamos.
+        window.location.href = redirectPath;
+      } else {
+        // Si no, usamos la lógica de roles por defecto.
+        const role = response.data?.user?.rol?.roleEnum;
+        switch (role.toUpperCase()) {
+          case 'ADMIN':
+            window.location.href = '/admin/users'; 
+            break;
+          case 'STUDENT':
+            window.location.href = '/student/my-courses'; // Cambiado a "Mis Cursos"
+            break;
+          case 'TEACHER':
+            window.location.href = '/teacher/courses'; // Cambiado a "Mis Cursos" del profesor
+            break;
+          default:
+            showToast('error', 'Error', `Rol "${role}" no reconocido.`);
+            localStorage.removeItem('user');
+            break;
+        }
       }
 
     } catch (err) {
@@ -77,7 +91,10 @@ const Login = () => {
   const cardFooter = (
     <div style={{ textAlign: 'center', marginTop: '2rem' }}>
       <span>¿No tienes una cuenta? </span>
-      <Link to="/register">Regístrate aquí</Link>
+      {/* 4. Pasa el parámetro de redirección al enlace de Registro */}
+      <Link to={`/register${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : ''}`}>
+        Regístrate aquí
+      </Link>
     </div>
   );
 
@@ -85,7 +102,7 @@ const Login = () => {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <Card title="Iniciar Sesión" style={{ width: '25rem', padding: '1rem' }} footer={cardFooter}>
         <form onSubmit={handleLogin} className="p-fluid">
-
+          {/* JSX con validaciones */}
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText 
@@ -93,9 +110,11 @@ const Login = () => {
                 type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
+                className={formErrors.email ? 'p-invalid' : ''}
               />
               <label htmlFor="email">Correo Electrónico</label>
             </span>
+            {formErrors.email && <small className="p-error">{formErrors.email}</small>}
           </div>
 
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
@@ -106,9 +125,11 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)} 
                 toggleMask 
                 feedback={false}
+                className={formErrors.password ? 'p-invalid' : ''}
               />
               <label htmlFor="password">Contraseña</label>
             </span>
+            {formErrors.password && <small className="p-error">{formErrors.password}</small>}
           </div>
 
           <Button 

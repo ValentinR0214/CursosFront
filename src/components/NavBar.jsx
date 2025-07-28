@@ -11,6 +11,7 @@ const NavBar = () => {
   const role = session?.user?.rol?.roleEnum || '';
   const userName = session?.user?.name || 'Usuario';
 
+  // Si no hay sesión, no renderiza nada (aunque el Router ya lo controla)
   if (!session) {
     return null;
   }
@@ -18,43 +19,30 @@ const NavBar = () => {
   const getMenuItems = () => {
     const items = [];
 
+    // --- Enlaces para ADMIN ---
     if (role === 'ADMIN') {
       items.push(
-        {
-          label: 'Registrar Profesor',
-          icon: 'pi pi-user-plus',
-          command: () => { navigate('/registerteacher'); }
-        },
-        {
-          label: 'Categorías',
-          icon: 'pi pi-tags',
-          command: () => { navigate('/admin/categories'); }
-        },
-        {
-          label: 'Ver Usuarios',
-          icon: 'pi pi-users',
-          command: () => { navigate('/admin/users'); } 
-        }
+        { label: 'Gestionar Usuarios', icon: 'pi pi-users', command: () => navigate('/admin/users') },
+        { label: 'Gestionar Categorías', icon: 'pi pi-tags', command: () => navigate('/admin/categories') },
+        { label: 'Registrar Profesor', icon: 'pi pi-user-plus', command: () => navigate('/registerteacher') }
       );
     }
 
+    // --- Enlaces para TEACHER ---
     if (role === 'TEACHER') {
       items.push(
-        {
-          label: 'Mis Cursos',
-          icon: 'pi pi-book',
-          command: () => { navigate('/teacher/courses'); }
-        }
+        { label: 'Mis Cursos', icon: 'pi pi-book', command: () => navigate('/teacher/courses') }
       );
     }
 
+    // --- Enlaces para STUDENT ---
     if (role === 'STUDENT') {
       items.push(
-        {
-          label: 'Mi Test',
-          icon: 'pi pi-file-edit',
-          command: () => { navigate('/test'); }
-        }
+        // --- 1. CAMBIO AQUÍ ---
+        // El catálogo es una ruta pública, así que apuntamos a la raíz del catálogo
+        { label: 'Catálogo de Cursos', icon: 'pi pi-shopping-cart', command: () => navigate('/courses') },
+        { label: 'Mis Cursos', icon: 'pi pi-book', command: () => navigate('/student/my-courses') },
+        { label: 'Mi Test', icon: 'pi pi-file-edit', command: () => navigate('/test') }
       );
     }
 
@@ -67,15 +55,13 @@ const NavBar = () => {
   };
 
   const endContent = (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-
-      <span className="p-mr-2" style={{marginRight: '1rem'}}>Hola, {userName}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <span className="p-mr-2">Hola, {userName}</span>
       <Button 
         label="Mi Perfil" 
         icon="pi pi-user" 
         className="p-button-text p-button-secondary" 
         onClick={() => navigate('/profile')} 
-        style={{ marginRight: '1rem' }} 
       />
       <Button 
         label="Cerrar Sesión" 
@@ -84,13 +70,21 @@ const NavBar = () => {
         onClick={handleLogout} 
       />
     </div>
-
-    
+  );
+  
+  // Agregamos el logo/nombre de la app también al NavBar privado
+  const startContent = (
+    <span 
+      style={{ fontWeight: 'bold', fontSize: '1.5rem', cursor: 'pointer', marginRight: '2rem' }} 
+      onClick={() => navigate('/')} // El logo siempre lleva a la página de inicio
+    >
+      Mi App de Cursos
+    </span>
   );
 
   return (
     <div className="card">
-      <Menubar model={getMenuItems()} end={endContent} />
+      <Menubar model={getMenuItems()} start={startContent} end={endContent} />
     </div>
   );
 };
