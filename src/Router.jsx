@@ -18,6 +18,8 @@ import CourseViewer from './components/Student/CourseViewer.jsx';
 import Test from './components/Test/Test.jsx';
 import EnrolledStudents from './components/Teacher/EnrolledStudents.jsx';
 import { decryptData } from './utils/security.js';
+import RequestPasswordReset from './components/Auth/RequestPasswordReset.jsx';
+import ResetPassword from './components/Auth/ResetPassword.jsx';
 
 const LandingRedirect = () => {
   const encryptedSessionData = localStorage.getItem('user');
@@ -63,6 +65,10 @@ function Router() {
           <>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/request-password-reset" element={<RequestPasswordReset />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </>
         )}
 
