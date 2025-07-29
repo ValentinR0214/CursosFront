@@ -26,7 +26,6 @@ const RequestPasswordReset = () => {
       showToast('success', 'Petición Enviada', 'Si el correo existe, recibirás un enlace para restablecer tu contraseña.');
       setEmail('');
     } catch (err) {
-      // Aunque el backend siempre devuelve éxito, manejamos un error de red por si acaso.
       showToast('error', 'Error', 'No se pudo procesar la solicitud. Inténtalo de nuevo más tarde.');
     } finally {
       setLoading(false);

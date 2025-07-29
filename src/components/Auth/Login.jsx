@@ -106,7 +106,6 @@ const Login = () => {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <Card title="Iniciar Sesión" style={{ width: '25rem', padding: '1rem' }} footer={cardFooter}>
         <form onSubmit={handleLogin} className="p-fluid">
-          {/* Campo Email */}
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText 
@@ -121,7 +120,6 @@ const Login = () => {
             {formErrors.email && <small className="p-error">{formErrors.email}</small>}
           </div>
 
-          {/* Campo Contraseña */}
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <Password 
@@ -137,14 +135,12 @@ const Login = () => {
             {formErrors.password && <small className="p-error">{formErrors.password}</small>}
           </div>
           
-          {/* --- ENLACE AÑADIDO --- */}
           <div style={{ textAlign: 'right', marginTop: '0.5rem', marginBottom: '1rem' }}>
             <Link to="/request-password-reset" style={{ fontSize: '0.9em' }}>
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
 
-          {/* Botón de envío */}
           <Button 
             type="submit" 
             label={loading ? 'Iniciando...' : 'Iniciar Sesión'}
