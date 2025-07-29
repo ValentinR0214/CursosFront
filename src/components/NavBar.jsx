@@ -22,7 +22,8 @@ const NavBar = () => {
       items.push(
         { label: 'Gestionar Usuarios', icon: 'pi pi-users', command: () => navigate('/admin/users') },
         { label: 'Gestionar Categorías', icon: 'pi pi-tags', command: () => navigate('/admin/categories') },
-        { label: 'Registrar Profesor', icon: 'pi pi-user-plus', command: () => navigate('/registerteacher') }
+        { label: 'Registrar Profesor', icon: 'pi pi-user-plus', command: () => navigate('/registerteacher') },
+        { label: 'Logs del Sistema', icon: 'pi pi-book', command: () => navigate('/admin/logs')}
       );
     }
 

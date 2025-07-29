@@ -1,34 +1,24 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-
-// --- COMPONENTES ---
-// Públicos y de Autenticación
-// (Recomendación: Mueve CourseCatalog y CoursePreview a una carpeta "Public")
 import CourseCatalog from './components/Public/CourseCatalog.jsx';
 import CoursePreview from './components/Public/CoursePreview.jsx';
 import Login from './components/Auth/Login.jsx';
 import Register from './components/Auth/Register.jsx';
-
-// NavBars
 import NavBar from './components/NavBar.jsx';
-import PublicNavBar from './components/PublicNavbar.jsx'; // Corregida posible capitalización
-
-// Privados (importaciones de todas tus páginas)
+import PublicNavBar from './components/PublicNavbar.jsx'; 
 import UserProfile from './components/Profile/UserProfile.jsx';
 import RegisterTeacher from './components/Auth/RegisterTeacher.jsx';
 import UserManagement from './components/Admin/UserManagement.jsx';
 import CategoryManagement from './components/Admin/CategoryManagement.jsx';
+import AuditLogViewer from './components/Admin/AuditLogViewer.jsx';
 import CourseManagement from './components/Teacher/CourseManagement.jsx';
 import CourseContentEditor from './components/Teacher/CourseContentEditor.jsx';
 import MyCourses from './components/Student/MyCourses.jsx';
 import CourseViewer from './components/Student/CourseViewer.jsx';
 import Test from './components/Test/Test.jsx';
 import EnrolledStudents from './components/Teacher/EnrolledStudents.jsx';
-
-// Utilidades
 import { decryptData } from './utils/security.js';
 
-// --- COMPONENTE DE AYUDA PARA LA RUTA RAÍZ ---
 const LandingRedirect = () => {
   const encryptedSessionData = localStorage.getItem('user');
   const session = encryptedSessionData ? decryptData(encryptedSessionData) : null;
@@ -86,6 +76,8 @@ function Router() {
                 <Route path="/registerteacher" element={<RegisterTeacher />} />
                 <Route path="/admin/users" element={<UserManagement />} />
                 <Route path="/admin/categories" element={<CategoryManagement />} />
+                <Route path="/admin/logs" element={<AuditLogViewer />} />
+                <Route path="*" element={<Navigate to="/admin/users" replace />} />
               </>
             )}
 
