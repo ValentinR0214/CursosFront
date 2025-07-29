@@ -18,7 +18,6 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
 
   const isEditMode = course && course.id;
 
-  // Carga las categorías para el menú desplegable
   useEffect(() => {
     if (visible) {
       axios.get('http://localhost:8080/api/categories/active/', { headers: getAuthHeader() })
@@ -27,7 +26,6 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
     }
   }, [visible]);
 
-  // Llena el formulario con los datos del curso si estamos en modo edición
   useEffect(() => {
     if (isEditMode) {
       setFormData({
@@ -40,7 +38,7 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
     } else {
       setFormData({ name: '', description: '', duration: 0, categoryId: null, syllabus: '' });
     }
-    setSelectedFile(null); // Siempre resetea el archivo seleccionado
+    setSelectedFile(null);
   }, [course, visible]);
 
   const handleInputChange = (value, name) => {
@@ -48,12 +46,10 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
   };
 
   const onFileSelect = (e) => {
-    // PrimeReact v10+ usa e.files[0], versiones anteriores pueden usar e.file
     setSelectedFile(e.files[0]);
   };
 
   const handleSaveClick = () => {
-    // Construye el objeto FormData para enviar datos y archivos
     const courseFormData = new FormData();
     courseFormData.append('name', formData.name);
     courseFormData.append('description', formData.description);
@@ -69,7 +65,6 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
       courseFormData.append('file', selectedFile);
     }
     
-    // Llama a la función onSave del componente padre
     onSave(courseFormData, course?.id);
   };
   

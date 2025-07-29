@@ -2,8 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-
-// --- COMPONENTES DE PRIMEREACT ---
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { OrderList } from 'primereact/orderlist';
@@ -38,14 +36,11 @@ const CourseContentEditor = () => {
   const [targetModuleId, setTargetModuleId] = useState(null);
   const [lessonData, setLessonData] = useState({ title: '', type: 'text', url: '', textContent: '' });
 
-  // Carga inicial del contenido del curso
   useEffect(() => {
-    // Carga el nombre del curso para mostrarlo en el título
     axios.get(`http://localhost:8080/api/courses/findOne/${courseId}`, { headers: getAuthHeader() })
       .then(res => setCourseName(res.data.result.name))
       .catch(() => showToast('error', 'Error', 'No se pudo cargar el nombre del curso.'));
     
-    // Carga el contenido JSON del curso
     axios.get(`${API_URL}/get/${courseId}`, { headers: getAuthHeader() })
       .then(response => {
         const loadedContent = response.data.result.contentJson;
@@ -59,7 +54,6 @@ const CourseContentEditor = () => {
       .finally(() => setLoading(false));
   }, [courseId]);
 
-  // --- LÓGICA DE CRUD PARA MÓDulos ---
   const openModuleModal = (module = null) => {
     setCurrentModule(module);
     setModuleTitle(module ? module.title : '');
@@ -101,8 +95,6 @@ const CourseContentEditor = () => {
     setContent({ modules: updatedModules });
     showToast('info', 'Eliminado', 'El módulo ha sido eliminado.');
   };
-  
-  // --- LÓGICA DE CRUD PARA LECCIONES ---
   const lessonTypes = [
     { label: 'Texto Enriquecido', value: 'text' },
     { label: 'Video (URL)', value: 'video' },
@@ -132,7 +124,7 @@ const CourseContentEditor = () => {
 
     let updatedModules;
 
-    if (currentLesson) { // Editando
+    if (currentLesson) { 
       updatedModules = content.modules.map(mod => {
         if (mod.id === targetModuleId) {
           const updatedLessons = mod.lessons.map(les => 
@@ -143,7 +135,7 @@ const CourseContentEditor = () => {
         return mod;
       });
       showToast('success', 'Éxito', 'Lección actualizada.');
-    } else { // Creando
+    } else { 
       const newLesson = { ...lessonData, id: uuidv4() };
       updatedModules = content.modules.map(mod => {
         if (mod.id === targetModuleId) {
@@ -170,7 +162,6 @@ const CourseContentEditor = () => {
     showToast('info', 'Eliminada', 'La lección ha sido eliminada.');
   };
 
-  // --- GUARDADO FINAL ---
   const handleSaveContent = () => {
     setIsSaving(true);
     const jsonString = JSON.stringify(content);
@@ -183,7 +174,6 @@ const CourseContentEditor = () => {
     .finally(() => setIsSaving(false));
   };
 
-  // --- RENDERIZADO DEL EDITOR VISUAL ---
   const moduleTemplate = (module) => {
     const panelHeader = (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>

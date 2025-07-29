@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-// 1. Importa Link y useSearchParams para manejar la URL
 import { Link, useSearchParams } from 'react-router-dom';
 import { ToastContext } from '../../contexts/ToastContext';
 import authService from '../../services/authService';
@@ -16,7 +15,6 @@ const Login = () => {
   const [formErrors, setFormErrors] = useState({});
   
   const { showToast } = useContext(ToastContext);
-  // 2. Lee los parámetros de la URL
   const [searchParams] = useSearchParams();
   const redirectPath = searchParams.get('redirect');
 
@@ -56,22 +54,19 @@ const Login = () => {
       const encryptedData = encryptData(response.data);
       localStorage.setItem('user', encryptedData);
       
-      // --- 3. LÓGICA DE REDIRECCIÓN MEJORADA ---
       if (redirectPath) {
-        // Si hay una URL de redirección, la usamos.
         window.location.href = redirectPath;
       } else {
-        // Si no, usamos la lógica de roles por defecto.
         const role = response.data?.user?.rol?.roleEnum;
         switch (role.toUpperCase()) {
           case 'ADMIN':
             window.location.href = '/admin/users'; 
             break;
           case 'STUDENT':
-            window.location.href = '/student/my-courses'; // Cambiado a "Mis Cursos"
+            window.location.href = '/student/my-courses';
             break;
           case 'TEACHER':
-            window.location.href = '/teacher/courses'; // Cambiado a "Mis Cursos" del profesor
+            window.location.href = '/teacher/courses';
             break;
           default:
             showToast('error', 'Error', `Rol "${role}" no reconocido.`);
@@ -81,8 +76,21 @@ const Login = () => {
       }
 
     } catch (err) {
-      const apiError = err.response?.data?.message || err.response?.data?.text || 'Credenciales inválidas.';
-      showToast('error', 'Error de Autenticación', apiError);
+      if (!err.response) {
+        showToast('error', 'Error de Red', 'No se pudo conectar con el servidor.');
+        setLoading(false);
+        return;
+      }
+
+      const apiMessage = err.response.data?.message || 'Credenciales inválidas.';
+      const statusCode = err.response.status;
+
+      if (statusCode === 403) {
+        showToast('error', 'Cuenta Bloqueada', apiMessage, { life: 5000 }); 
+      } else { 
+        showToast('warn', 'Error de Autenticación', apiMessage);
+      }
+
     } finally {
       setLoading(false);
     }
@@ -91,7 +99,6 @@ const Login = () => {
   const cardFooter = (
     <div style={{ textAlign: 'center', marginTop: '2rem' }}>
       <span>¿No tienes una cuenta? </span>
-      {/* 4. Pasa el parámetro de redirección al enlace de Registro */}
       <Link to={`/register${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : ''}`}>
         Regístrate aquí
       </Link>
@@ -102,7 +109,6 @@ const Login = () => {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <Card title="Iniciar Sesión" style={{ width: '25rem', padding: '1rem' }} footer={cardFooter}>
         <form onSubmit={handleLogin} className="p-fluid">
-          {/* JSX con validaciones */}
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText 

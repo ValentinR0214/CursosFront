@@ -110,7 +110,6 @@ const CourseManagement = () => {
     return <img src={imageUrl} alt={rowData.name} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />;
   };
 
-  // --- TEMPLATE DE ACCIONES ACTUALIZADO ---
   const actionBodyTemplate = (rowData) => (
     <div style={{ display: 'flex', gap: '0.5rem' }}>
       <Button icon="pi pi-pencil" rounded outlined tooltip="Editar Detalles" tooltipOptions={{ position: 'top' }} onClick={() => openEdit(rowData)} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'; // ¡Importación corregida!
+import React, { useState, useEffect, useContext } from 'react'; 
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Card } from 'primereact/card';
@@ -27,8 +27,8 @@ const CoursePreview = () => {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      axios.get(`${API_URL}/courses/findOne/${courseId}`), // No requiere token
-      axios.get(`${API_URL}/content/get/${courseId}`, { headers: getAuthHeader() }) // Puede requerir token
+      axios.get(`${API_URL}/courses/findOne/${courseId}`),
+      axios.get(`${API_URL}/content/get/${courseId}`, { headers: getAuthHeader() }) 
     ]).then(([courseResponse, contentResponse]) => {
       setCourse(courseResponse.data.result);
       const loadedContent = contentResponse.data.result?.contentJson;
@@ -42,14 +42,13 @@ const CoursePreview = () => {
   }, [courseId, navigate, showToast]);
 
   const handleEnroll = () => {
-    // Si no hay sesión o no es estudiante, redirige a login CON el parámetro
     if (!session || !isStudent) {
       showToast('info', 'Acción Requerida', 'Por favor, inicia sesión o crea una cuenta para inscribirte.');
       const redirectUrl = `/student/course/${courseId}/view`;
       navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
       return;
     }
-    // Si ya está logueado, inscribe directamente
+    
     axios.post(`${API_URL}/courses/enroll`, { courseId }, { headers: getAuthHeader() })
       .then(() => {
         showToast('success', '¡Inscripción Exitosa!', '¡Ahora tienes acceso completo al curso!');
@@ -70,7 +69,7 @@ const CoursePreview = () => {
         </div>
       );
     }
-    // Lógica de renderizado completa
+   
     switch (lesson.type) {
       case 'video':
         const videoId = lesson.url.split('v=')[1]?.split('&')[0];

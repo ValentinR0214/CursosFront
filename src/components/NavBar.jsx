@@ -11,7 +11,6 @@ const NavBar = () => {
   const role = session?.user?.rol?.roleEnum || '';
   const userName = session?.user?.name || 'Usuario';
 
-  // Si no hay sesión, no renderiza nada (aunque el Router ya lo controla)
   if (!session) {
     return null;
   }
@@ -19,7 +18,6 @@ const NavBar = () => {
   const getMenuItems = () => {
     const items = [];
 
-    // --- Enlaces para ADMIN ---
     if (role === 'ADMIN') {
       items.push(
         { label: 'Gestionar Usuarios', icon: 'pi pi-users', command: () => navigate('/admin/users') },
@@ -28,18 +26,14 @@ const NavBar = () => {
       );
     }
 
-    // --- Enlaces para TEACHER ---
     if (role === 'TEACHER') {
       items.push(
         { label: 'Mis Cursos', icon: 'pi pi-book', command: () => navigate('/teacher/courses') }
       );
     }
 
-    // --- Enlaces para STUDENT ---
     if (role === 'STUDENT') {
       items.push(
-        // --- 1. CAMBIO AQUÍ ---
-        // El catálogo es una ruta pública, así que apuntamos a la raíz del catálogo
         { label: 'Catálogo de Cursos', icon: 'pi pi-shopping-cart', command: () => navigate('/courses') },
         { label: 'Mis Cursos', icon: 'pi pi-book', command: () => navigate('/student/my-courses') },
         { label: 'Mi Test', icon: 'pi pi-file-edit', command: () => navigate('/test') }
@@ -72,13 +66,12 @@ const NavBar = () => {
     </div>
   );
   
-  // Agregamos el logo/nombre de la app también al NavBar privado
   const startContent = (
     <span 
       style={{ fontWeight: 'bold', fontSize: '1.5rem', cursor: 'pointer', marginRight: '2rem' }} 
-      onClick={() => navigate('/')} // El logo siempre lleva a la página de inicio
+      onClick={() => navigate('/')} 
     >
-      Mi App de Cursos
+      Meli+
     </span>
   );
 

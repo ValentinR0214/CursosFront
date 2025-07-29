@@ -22,7 +22,6 @@ const CourseViewer = () => {
 
   useEffect(() => {
     setLoading(true);
-    // Hacemos las llamadas en paralelo para una carga más rápida
     Promise.all([
       axios.get(`${API_URL}/courses/findOne/${courseId}`, { headers: getAuthHeader() }),
       axios.get(`${API_URL}/content/get/${courseId}`, { headers: getAuthHeader() })
@@ -31,10 +30,8 @@ const CourseViewer = () => {
       const loadedContent = contentResponse.data.result?.contentJson;
       setContent(loadedContent && loadedContent.modules ? loadedContent : { modules: [] });
     }).catch(err => {
-      // Si el contenido no se encuentra (404), es normal, mostramos el curso sin contenido.
       if (err.response?.status === 404 && err.config.url.includes('/content/')) {
         setContent({ modules: [] });
-        // Si la llamada que falló fue la de obtener el curso, es un error más grave
       } else if (err.config.url.includes('/courses/')) {
         showToast('error', 'Error', 'No se pudo cargar el curso o no tienes permiso.');
         navigate('/student/my-courses');
@@ -44,11 +41,9 @@ const CourseViewer = () => {
     });
   }, [courseId, navigate, showToast]);
 
-  // Función para renderizar el contenido de cada lección
   const renderLessonContent = (lesson) => {
     switch (lesson.type) {
       case 'video':
-        // Extrae el ID de una URL de YouTube para poder incrustarla
         const videoIdMatch = lesson.url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         const videoId = videoIdMatch ? videoIdMatch[1] : null;
         
@@ -69,8 +64,6 @@ const CourseViewer = () => {
         return <p><a href={lesson.url} target="_blank" rel="noopener noreferrer">Ver video en una nueva pestaña</a></p>;
       
       case 'text':
-        // Usa dangerouslySetInnerHTML para renderizar el HTML del editor de texto enriquecido.
-        // React lo nombra así para recordarnos que debemos confiar en la fuente del HTML.
         return <div dangerouslySetInnerHTML={{ __html: lesson.textContent }} />;
       
       default:

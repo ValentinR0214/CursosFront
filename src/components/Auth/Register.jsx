@@ -2,8 +2,6 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContext } from '../../contexts/ToastContext';
 import authService from '../../services/authService';
-
-// --- Importaciones de Componentes de PrimeReact ---
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -14,10 +12,10 @@ const Register = () => {
   const [lastName, setLastName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState(''); // Añadido campo de teléfono
+  const [phone, setPhone] = useState(''); 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [formErrors, setFormErrors] = useState({}); // Estado para errores de validación
+  const [formErrors, setFormErrors] = useState({});
   
   const navigate = useNavigate();
   const { showToast } = useContext(ToastContext);

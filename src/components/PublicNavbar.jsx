@@ -6,7 +6,6 @@ import { Button } from 'primereact/button';
 const PublicNavBar = () => {
   const navigate = useNavigate();
 
-  // Contenido final de la barra: botones de Login y Registro (sin cambios)
   const endContent = (
     <div style={{ display: 'flex', gap: '0.5rem' }}>
       <Button 
@@ -24,10 +23,7 @@ const PublicNavBar = () => {
     </div>
   );
   
-  // El "start" de Menubar: logo o nombre de la app
   const startContent = (
-    // --- 1. CAMBIO AQUÍ ---
-    // Ahora, al hacer clic en el logo, siempre te llevará al catálogo de cursos.
     <span 
       style={{ fontWeight: 'bold', fontSize: '1.5rem', cursor: 'pointer' }} 
       onClick={() => navigate('/courses')}

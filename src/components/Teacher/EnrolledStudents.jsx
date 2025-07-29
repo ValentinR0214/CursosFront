@@ -23,7 +23,6 @@ const EnrolledStudents = () => {
   useEffect(() => {
     setLoading(true);
 
-    // Hacemos dos llamadas: una para los detalles del curso y otra para la lista de estudiantes
     const fetchCourseDetails = axios.get(`${API_URL}/findOne/${courseId}`, { headers: getAuthHeader() });
     const fetchStudents = axios.post(`${API_URL}/view-students`, { courseId }, { headers: getAuthHeader() });
 
@@ -34,7 +33,6 @@ const EnrolledStudents = () => {
       })
       .catch(err => {
         showToast('error', 'Error', 'No se pudieron cargar los datos de los estudiantes.');
-        // Si falla, redirige de vuelta a la lista de cursos del profesor
         navigate('/teacher/courses');
       })
       .finally(() => {
