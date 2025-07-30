@@ -21,7 +21,8 @@ const CourseCatalog = () => {
   const { showToast } = useContext(ToastContext);
   const navigate = useNavigate();
 
-  const session = decryptData(localStorage.getItem('user'));
+  const encryptedSessionData = localStorage.getItem('user');
+  const session = encryptedSessionData ? decryptData(encryptedSessionData) : null;
   const isStudent = session?.user?.rol?.roleEnum === 'STUDENT';
 
   const [first, setFirst] = useState(0);
