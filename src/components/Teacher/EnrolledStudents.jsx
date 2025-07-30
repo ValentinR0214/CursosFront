@@ -21,17 +21,25 @@ const EnrolledStudents = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!courseId) return;
+
     setLoading(true);
 
     const fetchCourseDetails = axios.get(`${API_URL}/findOne/${courseId}`, { headers: getAuthHeader() });
-    const fetchStudents = axios.post(`${API_URL}/view-students`, { courseId }, { headers: getAuthHeader() });
+    const payload = { courseId: Number(courseId) };
+    const fetchStudents = axios.post(`${API_URL}/view-students`, payload, { headers: getAuthHeader() });
 
     Promise.all([fetchCourseDetails, fetchStudents])
       .then(([courseResponse, studentsResponse]) => {
-        setCourseName(courseResponse.data.result.name);
-        setStudents(studentsResponse.data.result || []);
+        // Se utiliza el encadenamiento opcional (?.) para evitar errores si 'result' es nulo
+        setCourseName(courseResponse.data.result?.name || 'Curso no encontrado');
+
+        const studentData = studentsResponse.data.result || [];
+        setStudents(studentData);
       })
       .catch(err => {
+        // Es buena práctica mantener el console.error para registrar fallos en producción
+        console.error("Error al cargar los datos de los estudiantes: ", err);
         showToast('error', 'Error', 'No se pudieron cargar los datos de los estudiantes.');
         navigate('/teacher/courses');
       })
