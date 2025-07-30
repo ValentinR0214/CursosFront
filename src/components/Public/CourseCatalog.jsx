@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Link ya no es necesario
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
@@ -54,7 +54,7 @@ const CourseCatalog = () => {
         showToast('error', 'Error', 'No se pudieron cargar los cursos del catálogo.');
       }).finally(() => setLoading(false));
     }
-  }, [isStudent, showToast]);
+  }, [isStudent, showToast, rows]); // Añadido 'rows' a la dependencia para ser exhaustivo
 
   const onPageChange = (event) => {
     setFirst(event.first);
@@ -104,10 +104,9 @@ const CourseCatalog = () => {
     const imageUrl = course.imageUrl && (course.imageUrl.startsWith('http') ? course.imageUrl : `${API_BASE_URL}${course.imageUrl}`);
     const isEnrolled = isStudent && enrolledCourseIds.has(course.id);
 
+    // CAMBIO AQUÍ: Se eliminó el componente <Link> que envolvía la imagen.
     const header = (
-      <Link to={`/course/${course.id}/preview`}>
-        <img alt={course.name} src={imageUrl || 'https://via.placeholder.com/400x200'} style={{ height: '200px', objectFit: 'cover', width: '100%' }} />
-      </Link>
+      <img alt={course.name} src={imageUrl || 'https://via.placeholder.com/400x200'} style={{ height: '200px', objectFit: 'cover', width: '100%' }} />
     );
 
     const footer = (
@@ -117,7 +116,7 @@ const CourseCatalog = () => {
         )}
         <Button 
           label={isEnrolled ? "Ver Contenido" : "Inscribirse"}
-          icon={isEnrolled ? "pi pi-arrow-right" : "pi pi-plus"}
+          icon={isEnrolled ? "pi pi-eye" : "pi pi-plus"} // Icono 'pi-eye' para "ver"
           onClick={() => isEnrolled ? navigate(`/student/course/${course.id}/view`) : handleEnroll(course.id)}
           className={!isEnrolled ? 'p-button-success' : ''}
         />
@@ -133,8 +132,9 @@ const CourseCatalog = () => {
 
     return (
       <div key={course.id} style={{ width: '100%', display: 'flex' }}>
-        <Card title={<Link to={`/course/${course.id}/preview`} style={{ textDecoration: 'none', color: 'inherit' }}>{course.name}</Link>} subTitle={subTitle} footer={footer} header={header} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <p className="p-m-0" style={{ flexGrow: 1 }}>{course.description}</p>
+        {/* CAMBIO AQUÍ: El título ahora es un string, no un componente <Link> */}
+        <Card title={course.name} subTitle={subTitle} footer={footer} header={header} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <p className="p-m-0" style={{ flexGrow: 1, minHeight: '60px' }}>{course.description}</p>
         </Card>
       </div>
     );
@@ -148,7 +148,7 @@ const CourseCatalog = () => {
       <h2 style={{ marginBottom: '2rem' }}>Catálogo de Cursos</h2>
       {allCourses.length > 0 ? (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2rem' }}>
             {displayedCourses.map(course => courseCardTemplate(course))}
           </div>
           <Paginator first={first} rows={rows} totalRecords={allCourses.length} onPageChange={onPageChange} style={{ marginTop: '2rem', justifyContent: 'center' }} />

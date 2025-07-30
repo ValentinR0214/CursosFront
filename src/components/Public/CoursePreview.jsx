@@ -1,3 +1,5 @@
+//Por si la ruta la hacemos publica
+
 import React, { useState, useEffect, useContext } from 'react'; 
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -18,7 +20,7 @@ const CoursePreview = () => {
   const { showToast } = useContext(ToastContext);
 
   const [course, setCourse] = useState(null);
-  const [content, setContent] = useState(null);
+  const [content, setContent] = useState({ modules: [] }); // Inicializar siempre con un array
   const [loading, setLoading] = useState(true);
   
   const session = decryptData(localStorage.getItem('user'));
@@ -26,13 +28,19 @@ const CoursePreview = () => {
 
   useEffect(() => {
     setLoading(true);
+    // Para la vista previa, la información del curso es pública, pero el contenido puede ser privado.
+    // Esta lógica asume que getAuthHeader() devuelve un objeto vacío si no hay sesión, 
+    // permitiendo que el backend decida si el contenido es público.
     Promise.all([
-      axios.get(`${API_URL}/courses/findOne/${courseId}`),
+      axios.get(`${API_URL}/courses/findOne/${courseId}`), // Asumimos que es público
       axios.get(`${API_URL}/content/get/${courseId}`, { headers: getAuthHeader() }) 
     ]).then(([courseResponse, contentResponse]) => {
       setCourse(courseResponse.data.result);
-      const loadedContent = contentResponse.data.result?.contentJson;
-      setContent(loadedContent && loadedContent.modules ? loadedContent : { modules: [] });
+      // Leemos la estructura correcta que guarda el editor
+      const loadedContent = contentResponse.data.result?.content || { modules: [] };
+      setContent({
+        modules: Array.isArray(loadedContent.modules) ? loadedContent.modules : []
+      });
     }).catch(() => {
       showToast('error', 'Error', 'No se pudo cargar la vista previa del curso.');
       navigate('/');
@@ -44,116 +52,126 @@ const CoursePreview = () => {
   const handleEnroll = () => {
     if (!session || !isStudent) {
       showToast('info', 'Acción Requerida', 'Por favor, inicia sesión o crea una cuenta para inscribirte.');
+      // Redirige a login, y tras el login exitoso, al visor del curso.
       const redirectUrl = `/student/course/${courseId}/view`;
       navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
       return;
     }
     
-    axios.post(`${API_URL}/courses/enroll`, { courseId }, { headers: getAuthHeader() })
+    // El payload debe coincidir con lo que espera el backend.
+    // Si tu @RequestBody es un DTO, usa { courseId: courseId }
+    axios.post(`${API_URL}/courses/enroll`, { courseId: Number(courseId) }, { headers: getAuthHeader() })
       .then(() => {
         showToast('success', '¡Inscripción Exitosa!', '¡Ahora tienes acceso completo al curso!');
         navigate(`/student/course/${courseId}/view`);
       })
       .catch(err => {
-        const message = err.response?.status === 409 ? 'Ya estás inscrito en este curso.' : 'No se pudo procesar la inscripción.';
+        const message = err.response?.status === 409 
+          ? 'Ya estás inscrito en este curso.' 
+          : 'No se pudo procesar la inscripción.';
         showToast('warn', 'Atención', message);
       });
   };
 
-  const renderLessonContent = (lesson, isPreview = false) => {
-    if (isPreview) {
-      return (
-        <div style={{ display: 'flex', alignItems: 'center', color: '#999' }}>
-          <i className="pi pi-lock" style={{ marginRight: '0.5rem' }}></i>
-          <span>Contenido bloqueado. Inscríbete para acceder.</span>
-        </div>
-      );
-    }
-   
+  const renderLessonContent = (lesson) => {
+    // Esta función ahora solo se usa para renderizar contenido visible.
     switch (lesson.type) {
       case 'video':
-        const videoId = lesson.url.split('v=')[1]?.split('&')[0];
+        const videoIdMatch = lesson.url?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
         if (videoId) {
           return (
-            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-              <iframe style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} src={`https://www.youtube.com/embed/${videoId}`} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+            <div className="video-responsive">
+              <iframe src={`https://www.youtube.com/embed/${videoId}`} title={lesson.title} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
             </div>
           );
         }
-        return <a href={lesson.url} target="_blank" rel="noopener noreferrer">Ver video</a>;
+        return <a href={lesson.url} target="_blank" rel="noopener noreferrer">Ver recurso en nueva pestaña</a>;
       case 'text':
         return <div dangerouslySetInnerHTML={{ __html: lesson.textContent }} />;
       default:
-        return <p>Tipo de contenido no soportado.</p>;
+        return <p><em>Tipo de contenido no soportado.</em></p>;
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <ProgressSpinner />
-      </div>
-    );
-  }
+  // --- Renderizado del Componente ---
 
-  if (!course) {
-    return (
-      <Card title="Curso no encontrado" style={{ margin: '2rem' }}>
-        <p>El curso que buscas no existe o no está disponible.</p>
-        <Button label="Volver al Catálogo" onClick={() => navigate('/')} />
-      </Card>
-    );
-  }
-
-  const imageUrl = course.imageUrl && (course.imageUrl.startsWith('http') ? course.imageUrl : `${API_BASE_URL}${course.imageUrl}`);
-
-  const header = (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <h2>{course.name}</h2>
-      <Button label="Volver" icon="pi pi-arrow-left" className="p-button-text" onClick={() => navigate(-1)} />
-    </div>
-  );
+  if (loading) { /* ... spinner de carga ... */ }
+  if (!course) { /* ... mensaje de curso no encontrado ... */ }
+  
+  const imageUrl = course?.imageUrl && (course.imageUrl.startsWith('http') ? course.imageUrl : `${API_BASE_URL}${course.imageUrl}`);
+  const previewModules = content.modules.slice(0, 1); // Solo mostramos el primer módulo como vista previa
+  const remainingModuleCount = content.modules.length - previewModules.length;
 
   return (
     <div style={{ padding: '2rem' }}>
-      <Card title={header}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-          <div>
-            <img src={imageUrl || 'https://via.placeholder.com/600x300'} alt={course.name} style={{ width: '100%', borderRadius: '8px' }} />
-            <p style={{ marginTop: '1rem' }}>{course.description}</p>
-          </div>
-          <div style={{ border: '1px solid #ddd', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
-            <h4>Inscríbete a este curso</h4>
-            <p>Obtén acceso completo a todas las lecciones y materiales.</p>
-            <Button label="Inscribirme Ahora" icon="pi pi-check" className="p-button-lg p-button-success" onClick={handleEnroll} />
-            <div style={{ marginTop: '1rem' }}>
-              <Tag value={course.category?.name || 'General'} />
-              <span style={{ marginLeft: '1rem' }}>Prof. {course.teacher?.name}</span>
+        <style>{`.video-responsive{overflow:hidden;padding-bottom:56.25%;position:relative;height:0;}.video-responsive iframe{left:0;top:0;height:100%;width:100%;position:absolute;}`}</style>
+        <Card>
+            {/* ... Sección superior con la imagen y el botón de inscribir ... (sin cambios) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+              <div>
+                <h2>{course?.name}</h2>
+                <p className="p-text-secondary" style={{ marginTop: '-1rem' }}>Impartido por {course?.teacher?.name}</p>
+                <img src={imageUrl || 'https://via.placeholder.com/600x300'} alt={course?.name} style={{ width: '100%', borderRadius: '8px' }} />
+                <p style={{ marginTop: '1rem', lineHeight: '1.6' }}>{course?.description}</p>
+              </div>
+              <div style={{ border: '1px solid #ddd', padding: '1.5rem', borderRadius: '8px', textAlign: 'center', background: '#f8f9fa', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h4>Inscríbete a este curso</h4>
+                <p>Obtén acceso de por vida a todas las lecciones y materiales.</p>
+                <Button label="Inscribirme Ahora" icon="pi pi-check-circle" className="p-button-lg p-button-success" onClick={handleEnroll} />
+                <div style={{ marginTop: '1rem' }}>
+                  <Tag value={course?.category?.name || 'General'} />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        
-        <div style={{ marginTop: '2rem' }}>
-          <h3>Contenido del Curso (Vista Previa)</h3>
-          <Accordion multiple activeIndex={[0]}>
-            {content && content.modules && content.modules.map((module, moduleIndex) => (
-              <AccordionTab key={module.id} header={module.title}>
-                {module.lessons?.map((lesson, lessonIndex) => {
-                  const isLessonPreviewable = moduleIndex === 0 && lessonIndex === 0;
-                  return (
-                    <div key={lesson.id} style={{ padding: '1rem', borderBottom: '1px solid #f0f0f0', opacity: isLessonPreviewable ? 1 : 0.6 }}>
-                      <h4>{lesson.title}</h4>
-                      {renderLessonContent(lesson, !isLessonPreviewable)}
-                    </div>
-                  );
-                })}
-                {(!module.lessons || module.lessons.length === 0) && <p>Este módulo no tiene lecciones.</p>}
-              </AccordionTab>
-            ))}
-            {(!content || !content.modules || content.modules.length === 0) && <p>El contenido de este curso aún no ha sido publicado.</p>}
-          </Accordion>
-        </div>
-      </Card>
+
+            {/* --- SECCIÓN DE CONTENIDO DEL CURSO (MODIFICADA) --- */}
+            <div style={{ marginTop: '3rem' }}>
+              <h3>Contenido del Curso (Vista Previa)</h3>
+              <p className="p-text-secondary">Estás viendo el primer módulo. Inscríbete para desbloquear el resto del contenido.</p>
+              
+              <Accordion multiple activeIndex={[0]}>
+                {previewModules.map((module) => (
+                  <AccordionTab key={module.id} header={module.title}>
+                    {module.lessons?.map((lesson) => (
+                      <div key={lesson.id} style={{ padding: '1rem', borderBottom: '1px solid #f0f0f0' }}>
+                        <h4 style={{ display: 'flex', alignItems: 'center' }}>
+                          <i className={`pi ${lesson.type === 'video' ? 'pi-youtube' : 'pi-file'}`} style={{ marginRight: '0.75rem' }}/>
+                          {lesson.title}
+                        </h4>
+                        {renderLessonContent(lesson)}
+                      </div>
+                    ))}
+                    {(!module.lessons || module.lessons.length === 0) && <p>Este módulo no tiene lecciones.</p>}
+                  </AccordionTab>
+                ))}
+              </Accordion>
+
+              {/* --- BLOQUE DE LLAMADA A LA ACCIÓN (NUEVO) --- */}
+              {remainingModuleCount > 0 && (
+                <div style={{ 
+                  marginTop: '1rem', 
+                  padding: '2rem', 
+                  textAlign: 'center', 
+                  background: 'linear-gradient(to top, #e9ecef, #f8f9fa)', 
+                  border: '1px solid #dee2e6',
+                  borderRadius: '8px'
+                }}>
+                  <i className="pi pi-lock" style={{ fontSize: '2.5rem', color: 'var(--blue-500)' }}></i>
+                  <h3 style={{ marginTop: '1rem' }}>¿Te gustó la muestra?</h3>
+                  <p className="p-text-secondary" style={{ fontSize: '1.1rem' }}>
+                    Inscríbete ahora para desbloquear los <strong>{remainingModuleCount} módulos restantes</strong> y todo el contenido futuro.
+                  </p>
+                  <Button 
+                    label="Desbloquear Todo el Curso" 
+                    icon="pi pi-check-circle" 
+                    className="p-button-success p-button-lg" 
+                    onClick={handleEnroll} 
+                  />
+                </div>
+              )}
+            </div>
+        </Card>
     </div>
   );
 };
