@@ -56,8 +56,6 @@ const CourseManagement = () => {
       .then(res => {
         setSelectedCourse(res.data.result);
         setIsModalVisible(true);
-          console.log(course);
-
       })
       .catch(() => showToast('error', 'Error', 'No se pudieron cargar los detalles del curso.'));
   };
