@@ -69,7 +69,7 @@ const MyCourses = () => {
           onClick={() => handleUnenroll(course.id)} 
         />
         <Button 
-          label="Continuar Aprendiendo" 
+          label="Aprendizaje" 
           icon="pi pi-arrow-right" 
           onClick={() => navigate(`/student/course/${course.id}/view`)} 
         />

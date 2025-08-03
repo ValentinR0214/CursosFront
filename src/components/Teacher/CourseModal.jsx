@@ -16,8 +16,6 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
   const [categories, setCategories] = useState([]);
   const { showToast } = useContext(ToastContext);
 
-  const isEditMode = course && course.id;
-
   useEffect(() => {
     if (visible) {
       axios.get('http://localhost:8080/api/categories/active/', { headers: getAuthHeader() })
@@ -27,12 +25,13 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
   }, [visible]);
 
   useEffect(() => {
-    if (isEditMode) {
+    if (course && course.id) {
       setFormData({
-        name: course.name,
-        description: course.description,
-        duration: course.duration,
-        categoryId: course.category?.id || null,
+        name: course.name || '',
+        description: course.description || '',
+        duration: course.duration || 0,
+        // ✅ Compatible con ambas estructuras: course.category.id o course.categoryId
+        categoryId: course.category?.id || course.categoryId || null,
         syllabus: course.syllabus || '',
       });
     } else {
@@ -64,10 +63,11 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
     if (selectedFile) {
       courseFormData.append('file', selectedFile);
     }
-    
-    onSave(courseFormData, course?.id);
+
+    const courseId = course?.id || null;
+    onSave(courseFormData, courseId);
   };
-  
+
   const footer = (
     <>
       <Button label="Cancelar" icon="pi pi-times" onClick={onHide} className="p-button-text" />
@@ -76,7 +76,7 @@ const CourseModal = ({ course, visible, onHide, onSave, teacherId }) => {
   );
 
   return (
-    <Dialog header={isEditMode ? 'Editar Curso' : 'Nuevo Curso'} visible={visible} style={{ width: '50vw' }} modal onHide={onHide} footer={footer}>
+    <Dialog header={course?.id ? 'Editar Curso' : 'Nuevo Curso'} visible={visible} style={{ width: '50vw' }} modal onHide={onHide} footer={footer}>
       <div className="p-fluid">
         <div className="p-field" style={{ marginBottom: '1rem' }}>
           <label htmlFor="name">Nombre del Curso</label>

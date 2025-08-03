@@ -60,36 +60,45 @@ const CourseViewer = () => {
 
   // Función mejorada para renderizar el contenido de la lección
   const renderLessonContent = (lesson) => {
-    switch (lesson.type) {
-      case 'video':
-        // Expresión regular robusta para extraer el ID de YouTube de varios formatos de URL
-        const videoIdMatch = lesson.url?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        const videoId = videoIdMatch ? videoIdMatch[1] : null;
-        
-        if (videoId) {
-          return (
-            <div className="video-responsive">
-              <iframe 
-                src={`https://www.youtube.com/embed/${videoId}`} 
-                title={lesson.title} 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-              ></iframe>
-            </div>
-          );
-        }
-        // Fallback si la URL no es de YouTube o es inválida
-        return <p><a href={lesson.url} target="_blank" rel="noopener noreferrer">Ver recurso externo</a></p>;
-      
-      case 'text':
-        // 'dangerouslySetInnerHTML' es necesario para renderizar el HTML del Editor de PrimeReact
-        return <div dangerouslySetInnerHTML={{ __html: lesson.textContent }} />;
-      
-      default:
-        return <p><em>Tipo de contenido no soportado.</em></p>;
-    }
-  };
+  switch (lesson.type) {
+    case 'video':
+      const videoIdMatch = lesson.url?.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+      if (videoId) {
+        return (
+          <div className="video-responsive">
+            <iframe 
+              src={`https://www.youtube.com/embed/${videoId}`} 
+              title={lesson.title} 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen
+            ></iframe>
+          </div>
+        );
+      }
+      return <p><a href={lesson.url} target="_blank" rel="noopener noreferrer">Ver recurso externo</a></p>;
+
+    case 'text':
+      return <div dangerouslySetInnerHTML={{ __html: lesson.textContent }} />;
+
+    case 'image':
+  return (
+    <div className="image-responsive">
+      <img 
+        src={lesson.url}
+        alt={lesson.title}
+        onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=Imagen+no+disponible'; }}
+      />
+    </div>
+  );
+
+    default:
+      return <p><em>Tipo de contenido no soportado.</em></p>;
+  }
+};
+
 
   // --- Renderizado del componente ---
 
@@ -134,6 +143,20 @@ const CourseViewer = () => {
           width: 100%;
           position: absolute;
         }
+          .image-responsive {
+    overflow: hidden;
+          padding-bottom: 56.25%;
+          position: relative;
+          height: 0;
+  }
+
+  .image-responsive img {
+    left: 0;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          position: absolute;
+  }
       `}</style>
       <Card title={header}>
         <p className="p-text-secondary" style={{ marginBottom: '2rem' }}>{course?.description}</p>

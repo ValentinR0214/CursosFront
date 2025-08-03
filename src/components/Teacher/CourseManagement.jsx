@@ -56,6 +56,8 @@ const CourseManagement = () => {
       .then(res => {
         setSelectedCourse(res.data.result);
         setIsModalVisible(true);
+          console.log(course);
+
       })
       .catch(() => showToast('error', 'Error', 'No se pudieron cargar los detalles del curso.'));
   };
@@ -63,27 +65,27 @@ const CourseManagement = () => {
   const hideModal = () => setIsModalVisible(false);
 
   const handleSave = (courseFormData, courseId) => {
-    setLoading(true);
-    const isEdit = !!courseId;
-    const url = isEdit ? `${API_URL}/update-course/${courseId}` : `${API_URL}/save-course`;
-    const method = isEdit ? 'put' : 'post';
+  setLoading(true);
+  const isEdit = !!courseId;
+  const url = isEdit ? `${API_URL}/update-course/${courseId}` : `${API_URL}/save-course`;
+  const method = isEdit ? 'put' : 'post';
 
-    axios({
-      method,
-      url,
-      data: courseFormData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        ...getAuthHeader(),
-      },
-    }).then(() => {
-      showToast('success', 'Éxito', `Curso ${isEdit ? 'actualizado' : 'creado'}.`);
-      hideModal();
-      fetchCourses();
-    }).catch(err => {
-      showToast('error', 'Error', err.response?.data?.message || 'Ocurrió un error.');
-    }).finally(() => setLoading(false));
-  };
+  axios({
+    method,
+    url,
+    data: courseFormData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...getAuthHeader(),
+    },
+  }).then(() => {
+    showToast('success', 'Éxito', `Curso ${isEdit ? 'actualizado' : 'creado'}.`);
+    hideModal();
+    fetchCourses();
+  }).catch(err => {
+    showToast('error', 'Error', err.response?.data?.message || 'Ocurrió un error.');
+  }).finally(() => setLoading(false));
+};
 
   const handleDisable = (course) => {
     confirmDialog({
