@@ -1,12 +1,15 @@
 import React, { useState, useContext } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ToastContext } from '../../contexts/ToastContext';
 import authService from '../../services/authService';
-import { encryptData } from '../../utils/security';
+import { encryptData, getAuthHeader } from '../../utils/security';
+import axios from 'axios';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
+
+const API_BASE_URL = 'http://localhost:8080';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +19,10 @@ const Login = () => {
   
   const { showToast } = useContext(ToastContext);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const redirectPath = searchParams.get('redirect');
+  const enrollCourseId = searchParams.get('enrollCourseId');
 
   const validateForm = () => {
     const errors = {};
@@ -44,59 +50,61 @@ const Login = () => {
 
     try {
       const response = await authService.login({ email, password });
-
+      
       if (!response || !response.data) {
-        showToast('error', 'Error', 'Respuesta inesperada del servidor.');
-        setLoading(false); return;
+        throw new Error('Respuesta inesperada del servidor.');
       }
       
       const encryptedData = encryptData(response.data);
       localStorage.setItem('user', encryptedData);
       
-      if (redirectPath) {
+      if (enrollCourseId) {
+        showToast('info', 'Completando Inscripción', 'Un momento, te estamos inscribiendo...');
+        try {
+          await axios.post(`${API_BASE_URL}/api/courses/enroll`, 
+            { courseId: enrollCourseId }, 
+            { headers: getAuthHeader() }
+          );
+          window.location.href = `/student/course/${enrollCourseId}/view`;
+        } catch (enrollError) {
+          showToast('warn', 'Atención', 'No se pudo completar la inscripción (quizás ya estabas inscrito).');
+          window.location.href = '/student/my-courses';
+        }
+      } else if (redirectPath) {
         window.location.href = redirectPath;
       } else {
         const role = response.data?.user?.rol?.roleEnum;
         switch (role.toUpperCase()) {
-          case 'ADMIN':
-            window.location.href = '/admin/users'; 
-            break;
-          case 'STUDENT':
-            window.location.href = '/student/my-courses';
-            break;
-          case 'TEACHER':
-            window.location.href = '/teacher/courses';
-            break;
+          case 'ADMIN': window.location.href = '/admin/users'; break;
+          case 'STUDENT': window.location.href = '/student/my-courses'; break;
+          case 'TEACHER': window.location.href = '/teacher/courses'; break;
           default:
             showToast('error', 'Error', `Rol "${role}" no reconocido.`);
             localStorage.removeItem('user');
+            setLoading(false); 
             break;
         }
       }
-
     } catch (err) {
       if (!err.response) {
         showToast('error', 'Error de Red', 'No se pudo conectar con el servidor.');
-        setLoading(false); return;
+      } else {
+        const apiMessage = err.response.data?.message || 'Credenciales inválidas.';
+        const statusCode = err.response.status;
+        if (statusCode === 403) {
+          showToast('error', 'Cuenta Bloqueada', apiMessage, { life: 6000 });
+        } else { 
+          showToast('warn', 'Error de Autenticación', apiMessage);
+        }
       }
-
-      const apiMessage = err.response.data?.message || 'Credenciales inválidas.';
-      const statusCode = err.response.status;
-
-      if (statusCode === 403) {
-        showToast('error', 'Cuenta Bloqueada', apiMessage, { life: 5000 });
-      } else { 
-        showToast('warn', 'Error de Autenticación', apiMessage);
-      }
-    } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
   const cardFooter = (
     <div style={{ textAlign: 'center', marginTop: '2rem' }}>
       <span>¿No tienes una cuenta? </span>
-      <Link to={`/register${redirectPath ? `?redirect=${encodeURIComponent(redirectPath)}` : ''}`}>
+      <Link to={`/register${enrollCourseId ? `?enrollCourseId=${enrollCourseId}` : ''}`}>
         Regístrate aquí
       </Link>
     </div>

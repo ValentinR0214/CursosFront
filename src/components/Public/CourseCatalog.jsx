@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Link ya no es necesario
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
@@ -38,7 +38,6 @@ const CourseCatalog = () => {
         const myCourses = myCoursesResponse.data.result || [];
         const enrolledIds = new Set(myCourses.map(course => course.id));
         setEnrolledCourseIds(enrolledIds);
-
         const enabledCourses = allCoursesResponse.data.result.filter(course => course.enabled);
         setAllCourses(enabledCourses);
         setDisplayedCourses(enabledCourses.slice(0, rows));
@@ -54,7 +53,7 @@ const CourseCatalog = () => {
         showToast('error', 'Error', 'No se pudieron cargar los cursos del catálogo.');
       }).finally(() => setLoading(false));
     }
-  }, [isStudent, showToast, rows]); // Añadido 'rows' a la dependencia para ser exhaustivo
+  }, [isStudent, showToast, rows]);
 
   const onPageChange = (event) => {
     setFirst(event.first);
@@ -65,8 +64,7 @@ const CourseCatalog = () => {
   const handleEnroll = (courseId) => {
     if (!session || !isStudent) {
       showToast('info', 'Acción Requerida', 'Inicia sesión como estudiante para inscribirte.');
-      const redirectUrl = `/student/course/${courseId}/view`;
-      navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+      navigate(`/login?enrollCourseId=${courseId}`);
       return;
     }
     axios.post(`${API_URL}/enroll`, { courseId }, { headers: getAuthHeader() })
@@ -104,7 +102,6 @@ const CourseCatalog = () => {
     const imageUrl = course.imageUrl && (course.imageUrl.startsWith('http') ? course.imageUrl : `${API_BASE_URL}${course.imageUrl}`);
     const isEnrolled = isStudent && enrolledCourseIds.has(course.id);
 
-    // CAMBIO AQUÍ: Se eliminó el componente <Link> que envolvía la imagen.
     const header = (
       <img alt={course.name} src={imageUrl || 'https://via.placeholder.com/400x200'} style={{ height: '200px', objectFit: 'cover', width: '100%' }} />
     );
@@ -112,11 +109,11 @@ const CourseCatalog = () => {
     const footer = (
       <div style={{ display: 'flex', justifyContent: isEnrolled ? 'space-between' : 'flex-end', alignItems: 'center' }}>
         {isEnrolled && (
-          <Button label="Desuscribirse" icon="pi pi-times" className="p-button-text p-button-danger" onClick={() => handleUnenroll(course.id)} />
+          <Button label="Darse de baja" icon="pi pi-times" className="p-button-text p-button-danger" onClick={() => handleUnenroll(course.id)} />
         )}
         <Button 
           label={isEnrolled ? "Ver Contenido" : "Inscribirse"}
-          icon={isEnrolled ? "pi pi-eye" : "pi pi-plus"} // Icono 'pi-eye' para "ver"
+          icon={isEnrolled ? "pi pi-eye" : "pi pi-plus"}
           onClick={() => isEnrolled ? navigate(`/student/course/${course.id}/view`) : handleEnroll(course.id)}
           className={!isEnrolled ? 'p-button-success' : ''}
         />
@@ -132,7 +129,7 @@ const CourseCatalog = () => {
 
     return (
       <div key={course.id} style={{ width: '100%', display: 'flex' }}>
-        {/* CAMBIO AQUÍ: El título ahora es un string, no un componente <Link> */}
+        {/* El título ya no es un enlace, es solo texto */}
         <Card title={course.name} subTitle={subTitle} footer={footer} header={header} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <p className="p-m-0" style={{ flexGrow: 1, minHeight: '60px' }}>{course.description}</p>
         </Card>
@@ -146,6 +143,7 @@ const CourseCatalog = () => {
     <div className="card" style={{ padding: '2rem' }}>
       <ConfirmDialog />
       <h2 style={{ marginBottom: '2rem' }}>Catálogo de Cursos</h2>
+      
       {allCourses.length > 0 ? (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2rem' }}>

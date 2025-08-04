@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ToastContext } from '../../contexts/ToastContext';
 import authService from '../../services/authService';
 import { Card } from 'primereact/card';
@@ -16,9 +16,11 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-  
   const navigate = useNavigate();
   const { showToast } = useContext(ToastContext);
+  const [searchParams] = useSearchParams();
+  const enrollCourseId = searchParams.get('enrollCourseId');
+
   const validateForm = () => {
     const errors = {};
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -57,9 +59,9 @@ const Register = () => {
       setEmail('');
       setPhone('');
       setPassword('');
-      
       setTimeout(() => {
-        navigate('/login');
+        const loginUrl = `/login${enrollCourseId ? `?enrollCourseId=${enrollCourseId}` : ''}`;
+        navigate(loginUrl);
       }, 3000);
 
     } catch (err) {
@@ -73,7 +75,9 @@ const Register = () => {
   const cardFooter = (
     <div style={{ textAlign: 'center', marginTop: '2rem' }}>
       <span>¿Ya tienes una cuenta? </span>
-      <Link to="/login">Inicia sesión aquí</Link>
+      <Link to={`/login${enrollCourseId ? `?enrollCourseId=${enrollCourseId}` : ''}`}>
+        Inicia sesión aquí
+      </Link>
     </div>
   );
 
@@ -81,7 +85,6 @@ const Register = () => {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <Card title="Crear una Cuenta" style={{ width: '25rem', padding: '1rem' }} footer={cardFooter}>
         <form onSubmit={handleRegister} className="p-fluid">
-          {/* --- JSX con campos de validación --- */}
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} className={formErrors.name ? 'p-invalid' : ''} />
@@ -89,7 +92,6 @@ const Register = () => {
             </span>
             {formErrors.name && <small className="p-error">{formErrors.name}</small>}
           </div>
-
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className={formErrors.lastName ? 'p-invalid' : ''} />
@@ -97,7 +99,6 @@ const Register = () => {
             </span>
             {formErrors.lastName && <small className="p-error">{formErrors.lastName}</small>}
           </div>
-
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText id="surname" value={surname} onChange={(e) => setSurname(e.target.value)} className={formErrors.surname ? 'p-invalid' : ''} />
@@ -105,7 +106,6 @@ const Register = () => {
             </span>
             {formErrors.surname && <small className="p-error">{formErrors.surname}</small>}
           </div>
-
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={formErrors.email ? 'p-invalid' : ''} />
@@ -113,7 +113,6 @@ const Register = () => {
             </span>
             {formErrors.email && <small className="p-error">{formErrors.email}</small>}
           </div>
-          
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <InputText id="phone" keyfilter="int" value={phone} onChange={(e) => setPhone(e.target.value)} className={formErrors.phone ? 'p-invalid' : ''} />
@@ -121,7 +120,6 @@ const Register = () => {
             </span>
             {formErrors.phone && <small className="p-error">{formErrors.phone}</small>}
           </div>
-
           <div className="p-field" style={{ marginBottom: '1.5rem' }}>
             <span className="p-float-label">
               <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} toggleMask feedback={false} className={formErrors.password ? 'p-invalid' : ''} />
@@ -129,14 +127,7 @@ const Register = () => {
             </span>
             {formErrors.password && <small className="p-error">{formErrors.password}</small>}
           </div>
-
-          <Button 
-            type="submit" 
-            label={loading ? 'Registrando...' : 'Registrarse'}
-            icon={loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'}
-            disabled={loading} 
-            className="p-mt-2" 
-          />
+          <Button type="submit" label={loading ? 'Registrando...' : 'Registrarse'} icon={loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'} disabled={loading} className="p-mt-2" />
         </form>
       </Card>
     </div>

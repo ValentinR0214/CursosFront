@@ -37,7 +37,7 @@ const NavBar = () => {
       items.push(
         { label: 'Catálogo de Cursos', icon: 'pi pi-shopping-cart', command: () => navigate('/courses') },
         { label: 'Mis Cursos', icon: 'pi pi-book', command: () => navigate('/student/my-courses') },
-        { label: 'Mi Test', icon: 'pi pi-file-edit', command: () => navigate('/test') }
+       
       );
     }
 

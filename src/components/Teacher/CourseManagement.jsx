@@ -63,27 +63,27 @@ const CourseManagement = () => {
   const hideModal = () => setIsModalVisible(false);
 
   const handleSave = (courseFormData, courseId) => {
-  setLoading(true);
-  const isEdit = !!courseId;
-  const url = isEdit ? `${API_URL}/update-course/${courseId}` : `${API_URL}/save-course`;
-  const method = isEdit ? 'put' : 'post';
+    setLoading(true);
+    const isEdit = !!courseId;
+    const url = isEdit ? `${API_URL}/update-course/${courseId}` : `${API_URL}/save-course`;
+    const method = isEdit ? 'put' : 'post';
 
-  axios({
-    method,
-    url,
-    data: courseFormData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      ...getAuthHeader(),
-    },
-  }).then(() => {
-    showToast('success', 'Éxito', `Curso ${isEdit ? 'actualizado' : 'creado'}.`);
-    hideModal();
-    fetchCourses();
-  }).catch(err => {
-    showToast('error', 'Error', err.response?.data?.message || 'Ocurrió un error.');
-  }).finally(() => setLoading(false));
-};
+    axios({
+      method,
+      url,
+      data: courseFormData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...getAuthHeader(),
+      },
+    }).then(() => {
+      showToast('success', 'Éxito', `Curso ${isEdit ? 'actualizado' : 'creado'}.`);
+      hideModal();
+      fetchCourses();
+    }).catch(err => {
+      showToast('error', 'Error', err.response?.data?.message || 'Ocurrió un error.');
+    }).finally(() => setLoading(false));
+  };
 
   const handleDisable = (course) => {
     confirmDialog({
@@ -99,11 +99,11 @@ const CourseManagement = () => {
       }
     });
   };
-  
+
   const leftToolbarTemplate = () => <Button label="Nuevo Curso" icon="pi pi-plus" onClick={openNew} />;
-  
+
   const statusBodyTemplate = (rowData) => <Tag value={rowData.enabled ? 'Habilitado' : 'Deshabilitado'} severity={rowData.enabled ? 'success' : 'danger'} />;
-  
+
   const imageBodyTemplate = (rowData) => {
     if (!rowData.imageUrl) return <span style={{ color: '#aaa' }}>Sin imagen</span>;
     const imageUrl = rowData.imageUrl.startsWith('http') ? rowData.imageUrl : `${API_BASE_URL}${rowData.imageUrl}`;
@@ -115,14 +115,14 @@ const CourseManagement = () => {
       <Button icon="pi pi-pencil" rounded outlined tooltip="Editar Detalles" tooltipOptions={{ position: 'top' }} onClick={() => openEdit(rowData)} />
       <Button icon="pi pi-file-edit" rounded outlined severity="info" tooltip="Editar Contenido" tooltipOptions={{ position: 'top' }} onClick={() => navigate(`/teacher/course/${rowData.id}/content`)} />
       <Button icon="pi pi-users" rounded outlined severity="success" tooltip="Ver Estudiantes" tooltipOptions={{ position: 'top' }} onClick={() => navigate(`/teacher/course/${rowData.id}/students`)} />
-      <Button 
-        icon={rowData.enabled ? 'pi pi-eye-slash' : 'pi pi-eye'} 
-        rounded 
-        outlined 
-        severity={rowData.enabled ? 'warning' : 'success'} 
+      <Button
+        icon={rowData.enabled ? 'pi pi-eye-slash' : 'pi pi-eye'}
+        rounded
+        outlined
+        severity={rowData.enabled ? 'warning' : 'success'}
         tooltip={rowData.enabled ? 'Deshabilitar' : 'Habilitar'}
         tooltipOptions={{ position: 'top' }}
-        onClick={() => handleDisable(rowData)} 
+        onClick={() => handleDisable(rowData)}
       />
     </div>
   );
@@ -144,10 +144,9 @@ const CourseManagement = () => {
         <Column header="Imagen" body={imageBodyTemplate} />
         <Column field="name" header="Nombre" sortable />
         <Column field="description" header="Descripción" style={{ minWidth: '200px' }} />
-        <Column field="duration" header="Duración (hrs)" sortable />
         <Column field="categoryName" header="Categoría" sortable />
         <Column header="Estado" body={statusBodyTemplate} sortable field="enabled" />
-        <Column header="Acciones" body={actionBodyTemplate} style={{ minWidth: '15rem' }}/>
+        <Column header="Acciones" body={actionBodyTemplate} style={{ minWidth: '15rem' }} />
       </DataTable>
 
       <CourseModal course={selectedCourse} visible={isModalVisible} onHide={hideModal} onSave={handleSave} teacherId={teacherId} />
