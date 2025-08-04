@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
-import { decryptData } from '../utils/security';
+import { decryptData, getAuthHeader } from '../utils/security';
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -44,9 +44,17 @@ const NavBar = () => {
     return items;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
+    try {
+      await axios.post('http://localhost:8080/cursos/auth/logout',{}, {
+        headers: getAuthHeader()
+      });
+    } catch (error) {
+      console.log("Fallo al cerrar sesion en  el backend:", error);
+    } finally {
     localStorage.removeItem('user');
     window.location.href = '/Courses'; 
+    }
   };
 
   const endContent = (
